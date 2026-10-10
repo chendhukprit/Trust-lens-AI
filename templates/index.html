@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRUSTLENS AI | Think Before You Trust</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .analyzer-menu {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin: 25px 0;
+        }
+
+        .analyzer-card {
+            display: block;
+            width: 100%;
+            padding: 22px 16px;
+            border: 1px solid #dce3ed;
+            border-radius: 14px;
+            background: #ffffff;
+            color: #172b4d;
+            text-align: left;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .analyzer-card:hover {
+            border-color: #3478f6;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 18px rgba(35, 70, 120, 0.10);
+        }
+
+        .analyzer-card .card-icon {
+            display: block;
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .analyzer-card strong {
+            display: block;
+            font-size: 17px;
+            margin-bottom: 7px;
+        }
+
+        .analyzer-card small {
+            display: block;
+            color: #637083;
+            line-height: 1.5;
+        }
+
+        .analyzer-panel {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .analyzer-panel.active {
+            display: block;
+        }
+
+        .back-button {
+            display: inline-block;
+            width: auto;
+            margin-bottom: 18px;
+            padding: 10px 16px;
+            background: #eaf0f8;
+            color: #17345c;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .report-text {
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            line-height: 1.7;
+        }
+
+        .disclaimer {
+            font-size: 13px;
+            color: #637083;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 600px) {
+            .analyzer-menu {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <header>
+        <h1>🔐 TRUSTLENS AI</h1>
+        <h2>Think Before You Trust</h2>
+        <p>AI-assisted digital trust and risk analysis</p>
+    </header>
+
+    <main>
+        <!-- ANALYZER SELECTION MENU -->
+        <section id="menu">
+            <h2>What would you like to analyze?</h2>
+            <p>Select one analyzer to get started.</p>
+
+            <div class="analyzer-menu">
+                <button type="button" class="analyzer-card"
+                        onclick="openAnalyzer('message')">
+                    <span class="card-icon">💬</span>
+                    <strong>Message Analyzer</strong>
+                    <small>Check suspicious SMS, emails and messages.</small>
+                </button>
+
+                <button type="button" class="analyzer-card"
+                        onclick="openAnalyzer('internship')">
+                    <span class="card-icon">🎓</span>
+                    <strong>Internship Offer Analyzer</strong>
+                    <small>Check internship offers and training requests.</small>
+                </button>
+
+                <button type="button" class="analyzer-card"
+                        onclick="openAnalyzer('job')">
+                    <span class="card-icon">💼</span>
+                    <strong>Job Offer Analyzer</strong>
+                    <small>Review job offers and recruitment messages.</small>
+                </button>
+
+                <button type="button" class="analyzer-card"
+                        onclick="openAnalyzer('url')">
+                    <span class="card-icon">🔗</span>
+                    <strong>URL Analyzer</strong>
+                    <small>Check website links for suspicious indicators.</small>
+                </button>
+            </div>
+        </section>
+
+        <!-- MESSAGE ANALYZER -->
+        <section id="panel-message" class="analyzer-panel">
+            <button type="button" class="back-button" onclick="showMenu()">
+                ← Back to analyzers
+            </button>
+
+            <h2>💬 Message Analyzer</h2>
+            <form method="POST" action="/">
+                <textarea name="message"
+                    placeholder="Paste a suspicious message or email..."
+                    required></textarea>
+                <button type="submit">Analyze Message</button>
+            </form>
+
+            {% if result %}
+            <section class="result">
+                <h2>Message Risk Report</h2>
+                <h1>{{ result }}</h1>
+                <h3>Rule-based Risk Score: {{ risk_score }}/100</h3>
+
+                <h3>Warning Signals</h3>
+                {% if warnings %}
+                    <ul>
+                    {% for warning in warnings %}
+                        <li>{{ warning }}</li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No matching warning signals detected.</p>
+                {% endif %}
+
+                <h3>Safe Action</h3>
+                <p>{{ safe_action }}</p>
+
+                <h3>🤖 Gemini AI Explanation</h3>
+                <div class="report-text">{{ ai_explanation }}</div>
+            </section>
+            {% endif %}
+        </section>
+
+        <!-- INTERNSHIP ANALYZER -->
+        <section id="panel-internship" class="analyzer-panel">
+            <button type="button" class="back-button" onclick="showMenu()">
+                ← Back to analyzers
+            </button>
+
+            <h2>🎓 Internship Offer Analyzer</h2>
+            <form method="POST" action="/internship">
+                <textarea name="internship"
+                    placeholder="Paste the internship offer..."
+                    required></textarea>
+                <button type="submit">Analyze Internship</button>
+            </form>
+
+            {% if internship_result %}
+            <section class="result">
+                <h2>Internship Risk Report</h2>
+                <h1>{{ internship_result }}</h1>
+                <h3>Rule-based Risk Score: {{ internship_score }}/100</h3>
+
+                <h3>Warning Signals</h3>
+                {% if internship_warnings %}
+                    <ul>
+                    {% for warning in internship_warnings %}
+                        <li>{{ warning }}</li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No matching warning signals detected.</p>
+                {% endif %}
+
+                <h3>Safe Action</h3>
+                <p>{{ internship_action }}</p>
+
+                <h3>🤖 Gemini AI Explanation</h3>
+                <div class="report-text">{{ internship_ai_explanation }}</div>
+            </section>
+            {% endif %}
+        </section>
+
+        <!-- JOB ANALYZER -->
+        <section id="panel-job" class="analyzer-panel">
+            <button type="button" class="back-button" onclick="showMenu()">
+                ← Back to analyzers
+            </button>
+
+            <h2>💼 Job Offer Analyzer</h2>
+            <form method="POST" action="/job">
+                <textarea name="job"
+                    placeholder="Paste the job offer..."
+                    required></textarea>
+                <button type="submit">Analyze Job Offer</button>
+            </form>
+
+            {% if job_result %}
+            <section class="result">
+                <h2>Job Risk Report</h2>
+                <h1>{{ job_result }}</h1>
+                <h3>Rule-based Risk Score: {{ job_score }}/100</h3>
+
+                <h3>Warning Signals</h3>
+                {% if job_warnings %}
+                    <ul>
+                    {% for warning in job_warnings %}
+                        <li>{{ warning }}</li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No matching warning signals detected.</p>
+                {% endif %}
+
+                <h3>Safe Action</h3>
+                <p>{{ job_action }}</p>
+
+                <h3>🤖 Gemini AI Explanation</h3>
+                <div class="report-text">{{ job_ai_explanation }}</div>
+            </section>
+            {% endif %}
+        </section>
+
+        <!-- URL ANALYZER -->
+        <section id="panel-url" class="analyzer-panel">
+            <button type="button" class="back-button" onclick="showMenu()">
+                ← Back to analyzers
+            </button>
+
+            <h2>🔗 URL Analyzer</h2>
+            <form method="POST" action="/url">
+                <input type="text" name="url"
+                    placeholder="Enter a website URL..."
+                    required>
+                <button type="submit">Analyze URL</button>
+            </form>
+
+            {% if url_result %}
+            <section class="result">
+                <h2>URL Risk Report</h2>
+                <h1>{{ url_result }}</h1>
+                <h3>Rule-based Risk Score: {{ url_score }}/100</h3>
+
+                <h3>Warning Signals</h3>
+                {% if url_warnings %}
+                    <ul>
+                    {% for warning in url_warnings %}
+                        <li>{{ warning }}</li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No matching URL warning signals detected.</p>
+                {% endif %}
+
+                <h3>Safe Action</h3>
+                <p>{{ url_action }}</p>
+
+                <h3>🤖 Gemini AI Explanation</h3>
+                <div class="report-text">{{ url_ai_explanation }}</div>
+            </section>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer>
+        <p>TRUSTLENS AI • Think Before You Trust</p>
+        <p class="disclaimer">
+            AI-assisted results are advisory. They do not prove that content
+            is genuine or fraudulent. Verify important claims independently.
+        </p>
+    </footer>
+</div>
+
+<script>
+    function openAnalyzer(name) {
+        document.getElementById("menu").style.display = "none";
+
+        document.querySelectorAll(".analyzer-panel").forEach(function(panel) {
+            panel.classList.remove("active");
+        });
+
+        const selected = document.getElementById("panel-" + name);
+
+        if (selected) {
+            selected.classList.add("active");
+        }
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function showMenu() {
+        document.getElementById("menu").style.display = "block";
+
+        document.querySelectorAll(".analyzer-panel").forEach(function(panel) {
+            panel.classList.remove("active");
+        });
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // After a form submission, reopen the analyzer that produced the report.
+    document.addEventListener("DOMContentLoaded", function() {
+        {% if result %}
+            openAnalyzer("message");
+        {% elif internship_result %}
+            openAnalyzer("internship");
+        {% elif job_result %}
+            openAnalyzer("job");
+        {% elif url_result %}
+            openAnalyzer("url");
+        {% endif %}
+    });
+</script>
+
+</body>
+</html>
